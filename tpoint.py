@@ -5,6 +5,89 @@ import json
 from datetime import datetime
 import hashlib
 
+def Survey(P):
+	'''
+	Perform automatic survey of the night sky by automating TheSkyX and MaximDL.
+
+	- This will produce a set of FITS files with relevant time and pointing parameters 
+	  stored in the headers.
+	- This routine does not plate-solve.  That process should be de-coupled, so as not
+	  to interupt the survey.
+	- The fits headers will include a session key.  The key indicates that the files
+	  were produced during the same run.
+  	- The plate solver does not have to be run in real-time.  FITS header data should allow you
+  	  to know not only rough pointing (speeds up plate solve), but also lat/lon and timestamp
+  	  for producing a tpoint file
+	'''
+	session_key = hashlib.md5(datetime.now().strftime("%Y-%m-%d %H:%M:%S")).hexdigest()
+	scope = skyx.sky6RASCOMTele()
+	scope.Connect()
+	camera = maximdl.Camera()
+	az,el = UniformSearchGrid(P)
+	count = 0
+	total = len(az)
+	for az1,el1 in zip(az,el):
+		count += 1
+		print "-------------------------------------"
+		print "Sample",count,"of",total
+		print "Time:",datetime.now()
+		print "Session Key:", session_key
+		print "Slewing... Az:",az1,"El:",el1
+		# Slew
+		scope.SlewToAzAlt([az1,el1])
+		# Expose
+		print "Exposing for",P['Exposure']," seconds..."
+		camera.expose(P['Exposure'])
+
+		# -------------------------------------------
+		#      Store Data in the FITS Header.
+		# -------------------------------------------
+
+		# store session key
+		camera.setFitsKey("tp_key",session_key)
+		ra,dec = scope.GetRaDec()
+		# store ra/dec
+		camera.setFitsKey("tp_ra",ra)
+		camera.setFitsKey("tp_dec",dec)
+		# store time_stamp
+		time_stamp = datetime.strftime(datetime.utcnow(),"%Y-%m-%dT%H:%M:%S.%f")
+		camera.setFitsKey("tp_utc",time_stamp)
+		# store lat/lon
+		camera.setFitsKey("tp_lat",P['Lat'])
+		camera.setFitsKey("tp_lon",P['Lon'])
+		# store sidereal time
+		camera.setFitsKey("tp_LST",compute_sidereal_time(P['Lon']))
+
+		# Save Exposure
+		filename = session_key + "_" + str(count) + ".fits"
+		save_dir = "C:\\Users\\Dave\\Desktop\\tpoint\\"
+		save_path = save_dir+filename
+		camera.saveImage(save_path)
+
+def compute_sidereal_time(lon,lat=0,alt=0,t=datetime.utcnow()):
+    '''
+        Return local apparent sidereal time in decimal hours:
+        
+        Inputs [required]
+        lon - (float) longitude in decimal degrees
+        
+        Inputs [optional]
+        lat - (float, default=0) latitude in decimal degrees
+        alt - (float, default=0) altitude in meteres
+        time - (float, default=now) datetime object
+        
+        Output
+        sidereal_time - (float) local apparent sidereal time in decimal hours
+    '''
+    ovr = ephem.Observer()
+    ovr.lon = lon * ephem.degree
+    ovr.lat = lat * ephem.degree
+    ovr.elevation = alt
+    ovr.date = t
+    st = ovr.sidereal_time()
+    st_hours = (st/ephem.degree)/15 # convert time in radians to decimal hours
+    return st_hours
+
 def RaDec2AzEl(DateTime,Ra,Dec,Lat,Lon,Alt=0,display=False):
     '''
     Given ra/dec pointing and an observation lat(deg),lon(deg),alt(m) at a UTC time
@@ -119,42 +202,11 @@ def UniformSearchGrid(P):
 	az,el = ScrubGridAzEl(P,az,el)
 	return az,el
 
-def Survey(P):
-	session_key = hashlib.md5(datetime.now().strftime("%Y-%m-%d %H:%M:%S")).hexdigest()
-	scope = skyx.sky6RASCOMTele()
-	scope.Connect()
-	camera = maximdl.Camera()
-	az,el = SearchGrid(P)
-	count = 0
-	total = len(az)
-	for az1,el1 in zip(az,el):
-		count += 1
-		print "-------------------------------------"
-		print "Sample",count,"of",total
-		print "Time:",datetime.now()
-		print "Session Key:", session_key
-		print "Slewing... Az:",az1,"El:",el1
-		# Slew
-		scope.SlewToAzAlt([az1,el1])
-		# Expose
-		print "Exposing for",P['Exposure']," seconds..."
-		camera.expose(P['Exposure'])
-		# Add Tags
-		camera.setFitsKey("tp_key",session_key)
-		ra,dec = scope.GetRaDec()
-		camera.setFitsKey("tp_ra",ra)
-		camera.setFitsKey("tp_dec",dec)
-		# Save Exposure
-		filename = session_key + "_" + str(count) + ".fits"
-		save_dir = "C:\\Users\\Dave\\Desktop\\tpoint\\"
-		save_path = save_dir+filename
-		camera.saveImage(save_path)
-
 def Test():
     # Calibration Parameters:
     P = {
         'MinEl': 30,
-        'MeridianBuffer': 10,
+        'MeridianBuffer': 30,
         'PoleBuffer': 20,
         'FovOverlap': 0.5,
         'Fov': 10,
@@ -169,10 +221,10 @@ def Test():
     # Show Input:
     print json.dumps(P,indent=4)
     # Execute Survey:
-    if False:
+    if True:
     	Survey(P)
 	# Plot
-    if True:
+    if False:
 		az,el = UniformSearchGrid(P)
 		Plot2D(az,el,P)
 		Plot3D(az,el,P)
