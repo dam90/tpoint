@@ -1,4 +1,4 @@
-import skyx, maximdl
+import skyx, maximdl, sphere
 import numpy as np
 import ephem
 import json
@@ -7,8 +7,8 @@ import hashlib
 
 def RaDec2AzEl(DateTime,Ra,Dec,Lat,Lon,Alt=0,display=False):
     '''
-        Given ra/dec pointing and an observation lat(deg),lon(deg),alt(m) at a UTC time
-        convert to az/el angles.  All inputs and outputs in degrees.
+    Given ra/dec pointing and an observation lat(deg),lon(deg),alt(m) at a UTC time
+    convert to az/el angles.  All inputs and outputs in degrees.
     '''
     # We need to create a "Body" in pyephem, which represents the coordinate
     # http://stackoverflow.com/questions/11169523/how-to-compute-alt-az-for-given-galactic-coordinate-glon-glat-with-pyephem
@@ -30,8 +30,8 @@ def RaDec2AzEl(DateTime,Ra,Dec,Lat,Lon,Alt=0,display=False):
 
 def AzEl2RaDec(DateTime,Az,El,Lat,Lon,Alt=0,display=False):
     '''
-        Given az/el pointing and an observation lat(deg),lon(deg),alt(m) at a UTC time
-        convert to rad/dec angles.  All inputs and outputs in degrees.
+    Given az/el pointing and an observation lat(deg),lon(deg),alt(m) at a UTC time
+    convert to rad/dec angles.  All inputs and outputs in degrees.
     '''
     import numpy as np
     import ephem
@@ -57,6 +57,9 @@ def AzEl2RaDec(DateTime,Az,El,Lat,Lon,Alt=0,display=False):
     return np.degrees(ra),np.degrees(dec)
 
 def ScrubGridAzEl(P,Az,El):
+	'''
+	This filters az/el pairs based on paramaters in the dictionary P
+	'''
 	Az_Scrub = []
 	El_Scrub = []
 	for az,el in zip(Az,El):
@@ -82,36 +85,7 @@ def ScrubGridAzEl(P,Az,El):
 		El_Scrub.append(el2)
 	return Az_Scrub,El_Scrub
 
-def SearchGrid(P,display=True):
-	'''
-	Produce a survey grid from evenly sampled points on the sphere.
-
-	To obtain uniform sampling on a sphere...
-	U and V random on (0,1)
-	theta = 2*pi*U = Azimuth*pi/180
-	phi = acos(2*V-1)= (90 - Elevation)*pi/180
-	'''
-	# Compute step size in degrees:
-	az = []
-	el = []
-	step = P['Fov']*(1-P['FovOverlap'])
-	step = P['Step']
-	U_samples = np.ceil(360/step)
-	V_samples = np.ceil(90/step)
-	U = np.linspace(0,1,U_samples)
-	V = np.linspace(0,1,V_samples)
-	theta = 2*np.pi*U
-	phi = np.arccos(2*V-1)
-	azp = theta*180/np.pi
-	elp = 90 - phi*(180/np.pi)
-	for a in azp:
-		for e in elp:
-			az.append(a)
-			el.append(e)
-	az,el = ScrubGridAzEl(P,az,el)
-	return az,el
-
-def RandomSearchGrid(P,display=True):
+def RandomSearchGrid(P):
 	'''
 	Produce a survey grid from randomly sampled points.
 
@@ -127,6 +101,21 @@ def RandomSearchGrid(P,display=True):
 	phi = np.arccos(2*V-1)
 	az = theta*180/np.pi
 	el = 90 - phi*(180/np.pi)
+	az,el = ScrubGridAzEl(P,az,el)
+	return az,el
+
+def UniformSearchGrid(P):
+	'''
+	Produce a search grid with specified area per grid point.
+	This results in a regular distribution.
+	'''
+	# points:
+	V,Phi = sphere.area_regular_points(P['Area'])
+	# create az/el:
+	az = Phi
+	el = []
+	for v in V:
+		el.append(90.0-v)
 	az,el = ScrubGridAzEl(P,az,el)
 	return az,el
 
@@ -161,12 +150,11 @@ def Survey(P):
 		save_path = save_dir+filename
 		camera.saveImage(save_path)
 
-
 def Test():
     # Calibration Parameters:
     P = {
         'MinEl': 30,
-        'MeridianBuffer': 3,
+        'MeridianBuffer': 10,
         'PoleBuffer': 20,
         'FovOverlap': 0.5,
         'Fov': 10,
@@ -175,62 +163,68 @@ def Test():
         'Direction': 'EW',
         'Number_Samples': 5000,
         'Exposure': 1,
-        'Step': 5
+        'Step': 5,
+        'Area': 5
         } 
-
+    # Show Input:
     print json.dumps(P,indent=4)
-    
+    # Execute Survey:
     if False:
     	Survey(P)
-
+	# Plot
     if True:
-		az,el = SearchGrid(P)
-		import matplotlib
-		import matplotlib.pyplot as plt
+		az,el = UniformSearchGrid(P)
+		Plot2D(az,el,P)
+		Plot3D(az,el,P)
 
-		plt.subplot(1,1,1)
+def Plot2D(az,el,P):
+	import matplotlib
+	import matplotlib.pyplot as plt
+	plt.subplot(1,1,1)
+	# plot meridian boundary:
+	handle_meridian = plt.plot([180,180],[0,90],color='red',linestyle='-',marker='None',label='Local Meridian')
+	handle_meridian_west_buffer = plt.plot([180+P['MeridianBuffer'],180+P['MeridianBuffer']],[0,90],color='red',linestyle='--',marker='None',label='Meridian Buffer ('+str(P['MeridianBuffer'])+' deg)')
+	handle_meridian_east_buffer = plt.plot([180-P['MeridianBuffer'],180-P['MeridianBuffer']],[0,90],color='red',linestyle='--',marker='None')
+	handle_meridian_east_buffer = plt.plot([360-P['MeridianBuffer'],360-P['MeridianBuffer']],[0,90],color='red',linestyle='--',marker='None')
+	handle_meridian_east_buffer = plt.plot([P['MeridianBuffer'],P['MeridianBuffer']],[0,90],color='red',linestyle='--',marker='None')
+	# plot minimum elevation:
+	handle_elevation_limit = plt.plot([0,360],[P['MinEl'],P['MinEl']],color='green',linestyle='--',marker='None',label='Minimum Elevation ('+str(P['MinEl'])+' deg)')
+	# plot pole boundary:
+	ax = plt.gca()
+	circle0 = matplotlib.patches.Circle((0,P['Lat']), P['PoleBuffer'], ec="b",fill=None,label='Pole Buffer ('+str(P['PoleBuffer'])+' deg)')
+	circle360 = matplotlib.patches.Circle((360,P['Lat']), P['PoleBuffer'], ec="b",fill=None)
+	ax.add_patch(circle0)
+	ax.add_patch(circle360)
+	# plot the survey points:
+	plt.plot(az,el,linestyle='None',marker='+')
+	# Make it nice
+	plt.axis('scaled')
+	if P['Lat'] >= 0:
+		plt.axis([0,360,0,90])
+	else:
+		plt.axis([0,360,0,90])
+	plt.ylabel('Elevation (deg)')
+	plt.xlabel('Azimuth (deg)')
+	plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,ncol=2, mode="expand", borderaxespad=0.)
 
-		# plot meridian boundary:
-		handle_meridian = plt.plot([180,180],[0,90],color='red',linestyle='-',marker='None',label='Local Meridian')
-		handle_meridian_west_buffer = plt.plot([180+P['MeridianBuffer'],180+P['MeridianBuffer']],[0,90],color='red',linestyle='--',marker='None',label='Meridian Buffer ('+str(P['MeridianBuffer'])+' deg)')
-		handle_meridian_east_buffer = plt.plot([180-P['MeridianBuffer'],180-P['MeridianBuffer']],[0,90],color='red',linestyle='--',marker='None')
-		handle_meridian_east_buffer = plt.plot([360-P['MeridianBuffer'],360-P['MeridianBuffer']],[0,90],color='red',linestyle='--',marker='None')
-		handle_meridian_east_buffer = plt.plot([P['MeridianBuffer'],P['MeridianBuffer']],[0,90],color='red',linestyle='--',marker='None')
-		# plot minimum elevation:
-		handle_elevation_limit = plt.plot([0,360],[P['MinEl'],P['MinEl']],color='green',linestyle='--',marker='None',label='Minimum Elevation ('+str(P['MinEl'])+' deg)')
-		# plot pole boundary:
-		ax = plt.gca()
-		circle0 = matplotlib.patches.Circle((0,P['Lat']), P['PoleBuffer'], ec="b",fill=None,label='Pole Buffer ('+str(P['PoleBuffer'])+' deg)')
-		circle360 = matplotlib.patches.Circle((360,P['Lat']), P['PoleBuffer'], ec="b",fill=None)
-		ax.add_patch(circle0)
-		ax.add_patch(circle360)
-		# plot the survey points:
-		plt.plot(az,el,linestyle='None',marker='+')
-		# Make it nice
-		plt.axis('scaled')
-		if P['Lat'] >= 0:
-			plt.axis([0,360,0,90])
-		else:
-			plt.axis([0,360,0,90])
-		plt.ylabel('Elevation (deg)')
-		plt.xlabel('Azimuth (deg)')
-		plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,ncol=2, mode="expand", borderaxespad=0.)
-
-		from mpl_toolkits.mplot3d import Axes3D
-		fig = plt.figure()
-		ax = fig.add_subplot(111, projection='3d')
-		x = np.cos(np.deg2rad(el))*np.cos(np.deg2rad(az))
-		y = np.cos(np.deg2rad(el))*np.sin(np.deg2rad(az))
-		z = np.sin(np.deg2rad(el))
-		ax.scatter(x, y, z)
-		ax.axis('equal')
-		ax.set_xlim(-1,1)
-		ax.set_ylim(-1,1)
-		ax.set_zlim(0,1)
-		ax.set_xlabel('X')
-		ax.set_ylabel('Y')
-		ax.set_zlabel('Z')
-		plt.show()
+def Plot3D(az,el,P):
+	import matplotlib
+	import matplotlib.pyplot as plt
+	from mpl_toolkits.mplot3d import Axes3D
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection='3d')
+	x = np.cos(np.deg2rad(el))*np.cos(np.deg2rad(az))
+	y = np.cos(np.deg2rad(el))*np.sin(np.deg2rad(az))
+	z = np.sin(np.deg2rad(el))
+	ax.scatter(x, y, z)
+	ax.axis('equal')
+	ax.set_xlim(-1,1)
+	ax.set_ylim(-1,1)
+	ax.set_zlim(0,1)
+	ax.set_xlabel('X')
+	ax.set_ylabel('Y')
+	ax.set_zlabel('Z')
+	plt.show()
 
 if __name__ == "__main__":
 	print '--------------------------------------------'
