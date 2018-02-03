@@ -12,7 +12,14 @@ I wanted to automatically generate tpoint alignment files for use with TheSkyX. 
 	* store solution (if any) in FITS header
 4. Compile tpoint file from aggregate FITS header data 
 
-Images
+Survey Example
 
-Inline-style: 
 ![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/survey_2D.png "2D Survey Plot")
+
+![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/survey_3D.png "2D Survey Plot")
+
+Routing Example
+
+![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/tsp_2D.png "2D Path Plot")
+
+![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/tsp_3D.png "2D Path Plot")
