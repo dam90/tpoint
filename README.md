@@ -22,16 +22,12 @@ Example input:
         "MinEl": 5,
         "MeridianBuffer": 4,
         "PoleBuffer": 20,
-        "FovOverlap": 0.5,
         "Fov": 10,
         "Lat": 40,
         "Lon": -84,
-        "Direction": "EW",
-        "Number_Samples": 5000,
         "Exposure": 1,
-        "Step": 5,
-        "Area": 2
-} 
+        "Area": 5
+}
 ```
 
 All angle units are in degrees... that's the only note I can think of here.

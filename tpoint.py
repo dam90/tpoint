@@ -273,6 +273,8 @@ def Test():
 		az2,el2 = ShortestPath(az,el)
 		Plot2D(az2,el2,P)
 		Plot3D(az2,el2,P)
+		Plot2D(az2,el2,P,'-')
+		Plot3D(az2,el2,P,'-')
 
 def Plot2D(az,el,P,my_line_style='None'):
 	import matplotlib
