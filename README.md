@@ -12,13 +12,40 @@ I wanted to automatically generate tpoint alignment files for use with TheSkyX. 
 	* store solution (if any) in FITS header
 4. Compile tpoint file from aggregate FITS header data 
 
-Survey Example
+## Details
+
+All the parameters are defined in one json object.  Here is the example input:
+
+hardcoded input:
+```javascript
+{
+        "MinEl": 5,
+        "MeridianBuffer": 4,
+        "PoleBuffer": 20,
+        "FovOverlap": 0.5,
+        "Fov": 10,
+        "Lat": 40,
+        "Lon": -84,
+        "Direction": "EW",
+        "Number_Samples": 5000,
+        "Exposure": 1,
+        "Step": 5,
+        "Area": 2
+} 
+```
+
+dynamic input:
+```javascript
+![alt text](https://github.com/dam90/tpoint/blob/master/test_input.json "json input")
+```
+
+Survey Images
 
 ![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/survey_2D.png "2D Survey Plot")
 
 ![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/survey_3D.png "2D Survey Plot")
 
-Routing Example
+Routing Images
 
 ![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/tsp_2D.png "2D Path Plot")
 
