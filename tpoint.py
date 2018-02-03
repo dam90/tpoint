@@ -1,9 +1,17 @@
-import skyx, maximdl, sphere
+
+try:
+	from api import skyx, maximdl
+except:
+	print "Could not import API libraries"
+
+import sphere
 import numpy as np
 import ephem
 import json
 from datetime import datetime
 import hashlib
+from tsp import tsp
+from random import shuffle
 
 def Survey(P):
 	'''
@@ -63,6 +71,37 @@ def Survey(P):
 		save_dir = "C:\\Users\\Dave\\Desktop\\tpoint\\"
 		save_path = save_dir+filename
 		camera.saveImage(save_path)
+
+def ShortestPath(az,el):
+	'''
+	Given az/el pairs (deg), determine the shortest path through the grid.
+	- Try to avoid meridian  flip
+	'''
+	# Split indeces into east/west data
+	east = []
+	west = []
+	for idx,v in enumerate(az):
+		if v <= 180:
+			east.append(idx)
+		else:
+			west.append(idx)
+	a=[]
+	e=[]
+	for points in [east,west]:
+		# create list of tuples
+		s = []
+		# add tuples to the list from one side of meridian
+		for i in points:
+			s.append((az[i],el[i]))
+		# find the index order for the shortest path
+		tour_id = tsp(s)
+		# add points to output
+		for i in tour_id:
+			a.append(s[i][0])
+			e.append(s[i][1])
+
+	return a,e
+
 
 def compute_sidereal_time(lon,lat=0,alt=0,t=datetime.utcnow()):
     '''
@@ -139,6 +178,23 @@ def AzEl2RaDec(DateTime,Az,El,Lat,Lon,Alt=0,display=False):
     # return output
     return np.degrees(ra),np.degrees(dec)
 
+def GreatCircleDelta(az1,el1,az2,el2):
+	'''
+	Return sthe central angle between to az/el coordinates (great circle distance)
+	Input/Output in degrees
+	'''
+	lam1 = np.deg2rad(az1)
+	phi1 = np.deg2rad(el1)
+	lam2 = np.deg2rad(az2)
+	phi2 = np.deg2rad(el2)
+	dlam = lam2-lam1
+	if abs(dlam) < 0.00001:
+		delta = 0
+	else:
+		sigma = np.arccos( (np.sin(phi1)*np.sin(phi2)) + (np.cos(phi1)*np.cos(phi2)*np.cos(dlam)) )
+		delta = abs(np.rad2deg(sigma))
+	return delta
+
 def ScrubGridAzEl(P,Az,El):
 	'''
 	This filters az/el pairs based on paramaters in the dictionary P
@@ -151,21 +207,19 @@ def ScrubGridAzEl(P,Az,El):
 		# 1) Distance from celestial pole
 		if dec > (90-P['PoleBuffer']):
 			continue
-		# convert back to az/el and slew
-		az2,el2 = RaDec2AzEl(datetime.now(),ra,dec,P['Lat'],P['Lon'])
 		# 2) Closeness to local meridian
-		if az2 < P['MeridianBuffer']:
-			continue
-		if abs(360-az2) < P['MeridianBuffer']:
-			continue 
-		if abs(180-az2) < P['MeridianBuffer']:
-			continue
+		if az <= 90 or az >= 270:
+			if GreatCircleDelta(az,el,0,el) < P['MeridianBuffer']:
+				continue
+		else:
+			if GreatCircleDelta(az,el,180,el) < P['MeridianBuffer']:
+				continue
 		# 3) minimum elevation
-		if el2 < P['MinEl']:
+		if el < P['MinEl']:
 			continue
 		# else, finally it should be good pointing:
-		Az_Scrub.append(az2)
-		El_Scrub.append(el2)
+		Az_Scrub.append(az)
+		El_Scrub.append(el)
 	return Az_Scrub,El_Scrub
 
 def RandomSearchGrid(P):
@@ -205,8 +259,8 @@ def UniformSearchGrid(P):
 def Test():
     # Calibration Parameters:
     P = {
-        'MinEl': 30,
-        'MeridianBuffer': 30,
+        'MinEl': 5,
+        'MeridianBuffer': 4,
         'PoleBuffer': 20,
         'FovOverlap': 0.5,
         'Fov': 10,
@@ -221,15 +275,16 @@ def Test():
     # Show Input:
     print json.dumps(P,indent=4)
     # Execute Survey:
-    if True:
+    if False:
     	Survey(P)
 	# Plot
-    if False:
+    if True:
 		az,el = UniformSearchGrid(P)
-		Plot2D(az,el,P)
-		Plot3D(az,el,P)
+		az2,el2 = ShortestPath(az,el)
+		Plot2D(az2,el2,P,'-')
+		Plot3D(az2,el2,P,'-')
 
-def Plot2D(az,el,P):
+def Plot2D(az,el,P,my_line_style='None'):
 	import matplotlib
 	import matplotlib.pyplot as plt
 	plt.subplot(1,1,1)
@@ -248,7 +303,7 @@ def Plot2D(az,el,P):
 	ax.add_patch(circle0)
 	ax.add_patch(circle360)
 	# plot the survey points:
-	plt.plot(az,el,linestyle='None',marker='+')
+	plt.plot(az,el,linestyle=my_line_style,marker='+')
 	# Make it nice
 	plt.axis('scaled')
 	if P['Lat'] >= 0:
@@ -259,7 +314,7 @@ def Plot2D(az,el,P):
 	plt.xlabel('Azimuth (deg)')
 	plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,ncol=2, mode="expand", borderaxespad=0.)
 
-def Plot3D(az,el,P):
+def Plot3D(az,el,P,my_line_style='None'):
 	import matplotlib
 	import matplotlib.pyplot as plt
 	from mpl_toolkits.mplot3d import Axes3D
@@ -268,7 +323,7 @@ def Plot3D(az,el,P):
 	x = np.cos(np.deg2rad(el))*np.cos(np.deg2rad(az))
 	y = np.cos(np.deg2rad(el))*np.sin(np.deg2rad(az))
 	z = np.sin(np.deg2rad(el))
-	ax.scatter(x, y, z)
+	ax.plot(x, y, z,linestyle=my_line_style,marker='+')
 	ax.axis('equal')
 	ax.set_xlim(-1,1)
 	ax.set_ylim(-1,1)
