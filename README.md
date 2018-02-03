@@ -14,7 +14,7 @@ I wanted to automatically generate tpoint alignment files for use with TheSkyX. 
 
 ## Details
 
-All the parameters are defined in one json object.  Here is the example input:
+All the survey parameters are defined in one json object.  Here is the example input:
 
 Example input:
 ```javascript
@@ -34,9 +34,11 @@ Example input:
 } 
 ```
 
+All angle units are in degrees... that's the only note I can think of here.
+
 ### Survey Grid
 
-The survey is constructed using elevation masks, keep out zones around the local meridian and the celestial pole.  Grid density is determined by the "Area" parameters (deg^2) which represents the averate area assigned to each grid point (see references).  The larger the area, the fewer the survey points.  This produces a regular distribution of points in spherical space (no increase in density near zenith).
+The survey is constructed using elevation masks, keep out zones around the local meridian and the celestial pole.  Grid density is determined by the "Area" parameter (deg^2) which represents the averate area assigned to each grid point (see references).  The larger the area, the fewer the survey points.  This produces a regular distribution of points in spherical space (no increase in grid density near zenith).
 
 ![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/survey_2D.png "2D Survey Plot")
 
@@ -44,7 +46,7 @@ The survey is constructed using elevation masks, keep out zones around the local
 
 ### Survey Sequence
 
-Once the survey grid is constructed, it's divided in half using the local meridian.  A sequence is developped using a solution to the "Travelling Salesman Problem" (TSP).  The goal is to find "one of the fastest" routes through all the grid points.
+Once the survey grid is constructed, it's split into two sets along local meridian.  A survey sequence is developped using a solution to the "Travelling Salesman Problem" (TSP) for each half, and then they are rejoined.  The goal is to find "one of the fastest" routes through all the grid points, with only only one meridian flip.
 
 ![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/tsp_2D.png "2D Path Plot")
 

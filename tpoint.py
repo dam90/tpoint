@@ -261,20 +261,7 @@ def UniformSearchGrid(P):
 
 def Test():
     # Calibration Parameters:
-    P = {
-        'MinEl': 5,
-        'MeridianBuffer': 4,
-        'PoleBuffer': 20,
-        'FovOverlap': 0.5,
-        'Fov': 10,
-        'Lat': 40,
-        'Lon': -84,
-        'Direction': 'EW',
-        'Number_Samples': 5000,
-        'Exposure': 1,
-        'Step': 5,
-        'Area': 2
-        } 
+    P = json.load(open('test_input.json')) 
     # Show Input:
     print json.dumps(P,indent=4)
     # Execute Survey:
@@ -284,8 +271,8 @@ def Test():
     if True:
 		az,el = UniformSearchGrid(P)
 		az2,el2 = ShortestPath(az,el)
-		Plot2D(az2,el2,P,'-')
-		Plot3D(az2,el2,P,'-')
+		Plot2D(az2,el2,P)
+		Plot3D(az2,el2,P)
 
 def Plot2D(az,el,P,my_line_style='None'):
 	import matplotlib
