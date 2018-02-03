@@ -11,3 +11,8 @@ I wanted to automatically generate tpoint alignment files for use with TheSkyX. 
 	* plate solve
 	* store solution (if any) in FITS header
 4. Compile tpoint file from aggregate FITS header data 
+
+Images
+
+Inline-style: 
+![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/survey_2D.png "2D Survey Plot")
