@@ -273,7 +273,7 @@ def Test():
         'Number_Samples': 5000,
         'Exposure': 1,
         'Step': 5,
-        'Area': 5
+        'Area': 2
         } 
     # Show Input:
     print json.dumps(P,indent=4)
