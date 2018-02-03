@@ -1,16 +1,19 @@
-
+# import API libraries:
 try:
 	from api import skyx, maximdl
 except:
 	print "Could not import API libraries"
-
-import sphere
+# import utilities:
+from utility import sphere
+from utility.tsp import tsp
+#from tsp import tsp
+# others:
 import numpy as np
 import ephem
 import json
 from datetime import datetime
 import hashlib
-from tsp import tsp
+
 from random import shuffle
 
 def Survey(P):
