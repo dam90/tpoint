@@ -16,7 +16,7 @@ I wanted to automatically generate tpoint alignment files for use with TheSkyX. 
 
 All the parameters are defined in one json object.  Here is the example input:
 
-hardcoded input:
+Example input:
 ```javascript
 {
         "MinEl": 5,
@@ -34,18 +34,17 @@ hardcoded input:
 } 
 ```
 
-dynamic input:
-```javascript
-![alt text](https://github.com/dam90/tpoint/blob/master/test_input.json "json input")
-```
+### Survey Grid
 
-Survey Images
+The survey is constructed using elevation masks, keep out zones around the local meridian and the celestial pole.  Grid density is determined by the "Area" parameters (deg^2) which represents the averate area assigned to each grid point (see references).  The larger the area, the fewer the survey points.  This produces a regular distribution of points in spherical space (no increase in density near zenith).
 
 ![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/survey_2D.png "2D Survey Plot")
 
 ![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/survey_3D.png "2D Survey Plot")
 
-Routing Images
+### Survey Sequence
+
+Once the survey grid is constructed, it's divided in half using the local meridian.  A sequence is developped using a solution to the "Travelling Salesman Problem" (TSP).  The goal is to find "one of the fastest" routes through all the grid points.
 
 ![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/tsp_2D.png "2D Path Plot")
 
