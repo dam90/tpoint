@@ -42,7 +42,7 @@ The survey is constructed using elevation masks, keep out zones around the local
 
 ### Survey Sequence
 
-Once the survey grid is constructed, it's split into two sets along local meridian.  A survey sequence is developped using a solution to the "Travelling Salesman Problem" (TSP) for each half, and then they are rejoined.  The goal is to find "one of the fastest" routes through all the grid points, with only only one meridian flip.
+Once the survey grid is constructed, it's split into two sets along local meridian.  A survey sequence is developped using a solution to the ["Travelling Salesman Problem" (TSP)](https://en.wikipedia.org/wiki/Travelling_salesman_problem) for each half, and then they are rejoined.  The goal is to find "one of the fastest" routes through all the grid points, with only only one meridian flip.
 
 ![alt text](docs/images/tsp_2D.png "2D Path Plot")
 
