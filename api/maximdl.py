@@ -6,7 +6,7 @@ NOERROR = False
  
 class Camera:
 	def __init__(self):
-		print "Connecting to MaxIm DL..."
+		#print "Connecting to MaxIm DL..."
 		self.__CAMERA = win32com.client.Dispatch("MaxIm.CCDCamera")
 		self.__CAMERA.DisableAutoShutdown = True
 		try:
@@ -25,7 +25,7 @@ class Camera:
 		self.__CAMERA.Expose(length,1,filterSlot)
 		while not self.__CAMERA.ImageReady:
 			time.sleep(1)
-		print "Light frame exposure and download complete!"
+		#print "Light frame exposure and download complete!"
  
 	def setFullFrame(self):
 		self.__CAMERA.SetFullFrame()

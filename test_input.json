@@ -6,5 +6,6 @@
         "Lat": 40,
         "Lon": -84,
         "Exposure": 1,
-        "Area": 5
+        "Area": 8,
+        "Save_Directory": "C:\\tpoint"
 } 

@@ -36,8 +36,9 @@ Example input:
         "Lat": 40,
         "Lon": -84,
         "Exposure": 1,
-        "Area": 5
-}
+        "Area": 8,
+        "Save_Directory": "C:\\tpoint"
+} 
 ```
 
 All angle units are in degrees... that's the only note I can think of here.
@@ -79,7 +80,7 @@ Setting FITS value: { tp_utc : 2018-02-04T15:21:22.874000 }
 Setting FITS value: { tp_lat : 40 }
 Setting FITS value: { tp_lon : -84 }
 Setting FITS value: { tp_LST : 18.728816248 }
-saving FITS image to: C:\Users\YourUser\Desktop\tpoint\503b4a385e14ff2c1079f9b4c24c8d5e_1.fits
+saving FITS image to: C:\tpoint\503b4a385e14ff2c1079f9b4c24c8d5e_1.fits
 -------------------------------------
 Sample 2 of 668
 Time: 2018-02-04 10:21:22.952000
@@ -95,5 +96,5 @@ Setting FITS value: { tp_utc : 2018-02-04T15:21:29.253000 }
 Setting FITS value: { tp_lat : 40 }
 Setting FITS value: { tp_lon : -84 }
 Setting FITS value: { tp_LST : 18.728816248 }
-saving FITS image to: C:\Users\YourUser\Desktop\tpoint\503b4a385e14ff2c1079f9b4c24c8d5e_2.fits
+saving FITS image to: C:\tpoint\503b4a385e14ff2c1079f9b4c24c8d5e_2.fits
 ```

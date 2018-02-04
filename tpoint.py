@@ -6,12 +6,12 @@ except:
 # import utilities:
 from utility import sphere
 from utility.tsp import tsp
-# others:
+# other dependencies:
 import numpy as np
 import ephem
-import json
+# python defaults:
+import os,json,hashlib
 from datetime import datetime
-import hashlib
 
 def Survey(P):
 	'''
@@ -27,12 +27,39 @@ def Survey(P):
   	  to know not only rough pointing (speeds up plate solve), but also lat/lon and timestamp
   	  for producing a tpoint file
 	'''
+	# check if output directory exists:
+	print "-------------------------------------"
+	print " Verifying output directory...."
+	if os.path.isdir(P['Save_Directory']):
+		print "Storing FITS files in:",P['Save_Directory']
+	else:
+		print "Directory does not exist:",P['Save_Directory']
+		print "Attempting to create directory..."
+		os.makedirs(P['Save_Directory'])
+		if os.path.isdir(P['Save_Directory']):
+			print "Done."
+		else:
+			print "Could not create directory.  Exiting."
+			return
+	# read input
 	session_key = hashlib.md5(datetime.now().strftime("%Y-%m-%d %H:%M:%S")).hexdigest()
-	scope = skyx.sky6RASCOMTele()
-	scope.Connect()
-	camera = maximdl.Camera()
+	print "-------------------------------------"
+	print " Current configuration:"
+	print json.dumps(P,indent=4)
+	# Connect
+	print "-------------------------------------"
+	print " Generating survey grid...."
 	az,el = UniformSearchGrid(P)
 	az,el = ShortestPath(az,el)
+	print "-------------------------------------"
+	print " Connecting to TheSkyX..."
+	scope = skyx.sky6RASCOMTele()
+	scope.Connect()
+	print "-------------------------------------"
+	print " Connecting to MaximDL..."
+	camera = maximdl.Camera()
+	print "-------------------------------------"
+	print " Initiating Survey..."
 	count = 0
 	total = len(az)
 	for az1,el1 in zip(az,el):
@@ -47,11 +74,9 @@ def Survey(P):
 		# Expose
 		print "Exposing for",P['Exposure']," seconds..."
 		camera.expose(P['Exposure'])
-
 		# -------------------------------------------
 		#      Store Data in the FITS Header.
 		# -------------------------------------------
-
 		# store session key
 		camera.setFitsKey("tp_key",session_key)
 		ra,dec = scope.GetRaDec()
@@ -66,12 +91,14 @@ def Survey(P):
 		camera.setFitsKey("tp_lon",P['Lon'])
 		# store sidereal time
 		camera.setFitsKey("tp_LST",compute_sidereal_time(P['Lon']))
-
 		# Save Exposure
 		filename = session_key + "_" + str(count) + ".fits"
-		save_dir = "C:\\Users\\Dave\\Desktop\\tpoint\\"
-		save_path = save_dir+filename
+		# save_dir = "C:\\Users\\Dave\\Desktop\\tpoint"
+		save_dir = P['Save_Directory']
+		save_path = save_dir+"\\"+filename
 		camera.saveImage(save_path)
+	print "-------------------------------------"
+	print " Survey Complete!"
 
 def ShortestPath(az,el):
 	'''
@@ -257,22 +284,19 @@ def UniformSearchGrid(P):
 	az,el = ScrubGridAzEl(P,az,el)
 	return az,el
 
-def Test():
-    # Calibration Parameters:
-    P = json.load(open('test_input.json')) 
+def Test(P):
+	print '--------------------------------------------'
+	print '    Demo of scripted T-Point Calibration'
+	print '--------------------------------------------'
     # Show Input:
-    print json.dumps(P,indent=4)
+	print json.dumps(P,indent=4)
     # Execute Survey:
-    if True:
-    	Survey(P)
-	# Plot
-    if False:
-		az,el = UniformSearchGrid(P)
-		az2,el2 = ShortestPath(az,el)
-		Plot2D(az2,el2,P)
-		Plot3D(az2,el2,P)
-		Plot2D(az2,el2,P,'-')
-		Plot3D(az2,el2,P,'-')
+	az,el = UniformSearchGrid(P)
+	az2,el2 = ShortestPath(az,el)
+	Plot2D(az2,el2,P)
+	Plot3D(az2,el2,P)
+	Plot2D(az2,el2,P,'-')
+	Plot3D(az2,el2,P,'-')
 
 def Plot2D(az,el,P,my_line_style='None'):
 	import matplotlib
@@ -324,7 +348,6 @@ def Plot3D(az,el,P,my_line_style='None'):
 	plt.show()
 
 if __name__ == "__main__":
-	print '--------------------------------------------'
-	print '    Demo of scripted T-Point Calibration'
-	print '--------------------------------------------'
-	Test()
+	# load survey config fromt he default file:
+	P = json.load(open('test_input.json'))
+	Survey(P)
