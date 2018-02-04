@@ -6,15 +6,12 @@ except:
 # import utilities:
 from utility import sphere
 from utility.tsp import tsp
-#from tsp import tsp
 # others:
 import numpy as np
 import ephem
 import json
 from datetime import datetime
 import hashlib
-
-from random import shuffle
 
 def Survey(P):
 	'''
@@ -266,10 +263,10 @@ def Test():
     # Show Input:
     print json.dumps(P,indent=4)
     # Execute Survey:
-    if False:
+    if True:
     	Survey(P)
 	# Plot
-    if True:
+    if False:
 		az,el = UniformSearchGrid(P)
 		az2,el2 = ShortestPath(az,el)
 		Plot2D(az2,el2,P)
