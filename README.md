@@ -20,7 +20,7 @@ Download or clone this repo, and use it.
 
 ### Windows Executable
 
-Download tpoint.exe from this repo.  Place "test_input.json" in the same directory as the executable.  Run it.
+Download tpoint.exe from this repo.  Place [test_input.json](test_input.json) in the same directory as the executable.  Run it.
 
 ## Details
 
