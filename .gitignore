@@ -10,9 +10,12 @@
 # ignore virtual environments:
 ve_*
 
+# ignore build folders from pyinstaller
+build
+dist
+
 # Icon must end with two \r
 Icon
-
 
 # Thumbnails
 ._*

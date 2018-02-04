@@ -12,6 +12,16 @@ I wanted to automatically generate tpoint alignment files for use with TheSkyX (
 	* store solution (if any) in FITS header
 4. Compile tpoint file from aggregate FITS header data 
 
+## Usage
+
+### Within Python
+
+Download or clone this repo, and use it.
+
+### Windows Executable
+
+Download tpoint.exe from this repo.  Place "test_input.json" in the same directory as the executable.  Run it.
+
 ## Details
 
 All the survey parameters are defined in one json object.  Here is the example input:
