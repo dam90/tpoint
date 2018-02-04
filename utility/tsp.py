@@ -281,19 +281,21 @@ def tsp(coord=[(4,0),(5,6),(8,3),(4,4),(4,1),(4,10),(4,7),(6,8),(8,1)]):
     # print
 
     # # greedy construction
-    # print "greedy construction with nearest neighbor + local search:"
-    # for i in range(n):
-    #     tour = nearest_neighbor(n, i, D)     # create a greedy tour, visiting city 'i' first
-    #     z = length(tour, D)
-    #     print "nneigh:", tour, z, '  -->  ',
-    #     z = localsearch(tour, z, D)
-    #     print tour, z
-    # print
+    print "greedy construction with nearest neighbor + local search:"
+    for i in range(100):
+        tour = nearest_neighbor(n, i, D)     # create a greedy tour, visiting city 'i' first
+        z = length(tour, D)
+        #print "nneigh:", tour, z, '  -->  ',
+        z = localsearch(tour, z, D)
+    #    print tour, z
+    print
 
     # multi-start local search
-    print "random start local search:"
-    niter = 100
-    tour,z = multistart_localsearch(niter, n, D, report_sol)
+    
+    # print "random start local search:"
+    # niter = 100
+    # tour,z = multistart_localsearch(niter, n, D, report_sol)
+    
     # print tour
     # assert z == length(tour, D)
     # print "best found solution (%d iterations): z = %g" % (niter, z)
