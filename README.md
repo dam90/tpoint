@@ -49,7 +49,7 @@ Once the survey grid is constructed, it's split into two sets along local meridi
 ![alt text](docs/images/tsp_3D.png "3D Path Plot")
 
 
-### Telescop Automation
+### Telescope Automation
 
 The "Survey" routine will build the suruvey as desribed above, and then automate the slew, integrate, save process for each pointin the survey.  Currently it will run to completion, with no logging of progress.  In the future, the survey session will have an associated file which logs progress and will allow resuming a cancelled session using the same grid points and session key.  Below is an example of the output as the survey runs:
 
