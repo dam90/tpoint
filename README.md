@@ -36,7 +36,7 @@ All angle units are in degrees... that's the only note I can think of here.
 
 The survey is constructed using elevation masks, keep out zones around the local meridian and the celestial pole.  Grid density is determined by the "Area" parameter (deg<sup>2</sup>) which represents the average area assigned to each grid point (see references).  The larger the area, the fewer the survey points.  This produces a regular distribution of points in spherical space (no increase in grid density near zenith).
 
-![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/survey_2D.png "2D Survey Grid")
+![alt text](docs/images/survey_2D.png "2D Survey Grid")
 
 ![alt text](https://github.com/dam90/tpoint/blob/master/docs/images/survey_3D.png "3D Survey Grid")
 
