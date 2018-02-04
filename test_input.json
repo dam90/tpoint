@@ -1,0 +1,10 @@
+{
+        "MinEl": 5,
+        "MeridianBuffer": 4,
+        "PoleBuffer": 20,
+        "Fov": 10,
+        "Lat": 40,
+        "Lon": -84,
+        "Exposure": 1,
+        "Area": 5
+} 
