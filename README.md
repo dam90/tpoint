@@ -18,9 +18,9 @@ I wanted to automatically generate tpoint alignment files for use with TheSkyX (
 
 Download or clone this repo, and use it.  Requirements are in [requirements.txt](requirements.txt).  To install them to your python environment run the following from the top directory:
 
-'''
+```
 pip install -r requirements.txt
-'''
+```
 
 ### Windows Executable
 
