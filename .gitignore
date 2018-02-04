@@ -13,6 +13,7 @@ ve_*
 # ignore build folders from pyinstaller
 build
 dist
+*.spec
 
 # Icon must end with two \r
 Icon
