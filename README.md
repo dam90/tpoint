@@ -1,6 +1,6 @@
 # tpoint.py : Automated Telescope Alignment
 
-I wanted to automatically generate tpoint alignment files for use with TheSkyX.  Eventually I will include a mount model library to use the tpoint files outside of theksy.  I need to do something like this:
+I wanted to automatically generate tpoint alignment files for use with TheSkyX (TSX).  Eventually I will include a mount model library to use the tpoint files outside of TSX.  I need to do something like this:
 
 1. Generate a set of survey points
 2. For each survey point:
@@ -51,7 +51,7 @@ Once the survey grid is constructed, it's split into two sets along local meridi
 
 ### Telescope Automation
 
-The "Survey" routine will build the suruvey as desribed above, and then automate the slew, integrate, save process for each pointin the survey.  Currently it will run to completion, with no logging of progress.  In the future, the survey session will have an associated file which logs progress and will allow resuming a cancelled session using the same grid points and session key.  Below is an example of the output as the survey runs:
+The "Survey" routine will build the survey as desribed above, and then automate the slew, integrate, save process for each point in the survey.  Currently it will run to completion, with no logging.  In the future, the survey session will have an associated file which logs progress and allows resuming a cancelled session using the same grid points and session key.  Below is an example of the output as the survey runs:
 
 ```
 -------------------------------------
