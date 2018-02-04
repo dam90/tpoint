@@ -51,7 +51,7 @@ Once the survey grid is constructed, it's split into two sets along local meridi
 
 ### Telescop Automation
 
-The "Survey" routine will build the suruvey as desribed above, and then automate the slew, integrate, save process for each pointin the survey.  Currently it will run to completion, with no logging of progress.  In the future, the survey session will have an associated file which logs progress and will allow resuming a cancelled session using the same grid points and session key.
+The "Survey" routine will build the suruvey as desribed above, and then automate the slew, integrate, save process for each pointin the survey.  Currently it will run to completion, with no logging of progress.  In the future, the survey session will have an associated file which logs progress and will allow resuming a cancelled session using the same grid points and session key.  Below is an example of the output as the survey runs:
 
 ```
 -------------------------------------
@@ -69,7 +69,7 @@ Setting FITS value: { tp_utc : 2018-02-04T15:21:22.874000 }
 Setting FITS value: { tp_lat : 40 }
 Setting FITS value: { tp_lon : -84 }
 Setting FITS value: { tp_LST : 18.728816248 }
-saving FITS image to: C:\Users\Dave\Desktop\tpoint\503b4a385e14ff2c1079f9b4c24c8d5e_1.fits
+saving FITS image to: C:\Users\YourUser\Desktop\tpoint\503b4a385e14ff2c1079f9b4c24c8d5e_1.fits
 -------------------------------------
 Sample 2 of 668
 Time: 2018-02-04 10:21:22.952000
@@ -85,5 +85,5 @@ Setting FITS value: { tp_utc : 2018-02-04T15:21:29.253000 }
 Setting FITS value: { tp_lat : 40 }
 Setting FITS value: { tp_lon : -84 }
 Setting FITS value: { tp_LST : 18.728816248 }
-saving FITS image to: C:\Users\Dave\Desktop\tpoint\503b4a385e14ff2c1079f9b4c24c8d5e_2.fits
+saving FITS image to: C:\Users\YourUser\Desktop\tpoint\503b4a385e14ff2c1079f9b4c24c8d5e_2.fits
 ```
