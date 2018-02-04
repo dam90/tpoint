@@ -35,7 +35,6 @@ def Survey(P):
 	scope.Connect()
 	camera = maximdl.Camera()
 	az,el = UniformSearchGrid(P)
-	az,el = ShortestPath(az,el)
 	count = 0
 	total = len(az)
 	for az1,el1 in zip(az,el):

@@ -266,10 +266,10 @@ def Test():
     # Show Input:
     print json.dumps(P,indent=4)
     # Execute Survey:
-    if False:
+    if True:
     	Survey(P)
 	# Plot
-    if True:
+    if False:
 		az,el = UniformSearchGrid(P)
 		az2,el2 = ShortestPath(az,el)
 		Plot2D(az2,el2,P)

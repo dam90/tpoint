@@ -35,7 +35,10 @@ def Survey(P):
 	scope.Connect()
 	camera = maximdl.Camera()
 	az,el = UniformSearchGrid(P)
+<<<<<<< HEAD
 	az,el = ShortestPath(az,el)
+=======
+>>>>>>> e86c529c934fda06868dc02d136e3e65181bbb3a
 	count = 0
 	total = len(az)
 	for az1,el1 in zip(az,el):
@@ -266,10 +269,17 @@ def Test():
     # Show Input:
     print json.dumps(P,indent=4)
     # Execute Survey:
+<<<<<<< HEAD
+    if True:
+    	Survey(P)
+	# Plot
+    if False:
+=======
     if False:
     	Survey(P)
 	# Plot
     if True:
+>>>>>>> e86c529c934fda06868dc02d136e3e65181bbb3a
 		az,el = UniformSearchGrid(P)
 		az2,el2 = ShortestPath(az,el)
 		Plot2D(az2,el2,P)

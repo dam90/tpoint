@@ -47,7 +47,7 @@ Once the survey grid is constructed, it's split into two sets along local meridi
 ![alt text](docs/images/tsp_2D.png "2D Path Plot")
 
 ![alt text](docs/images/tsp_3D.png "3D Path Plot")
-
+<<<<<<< HEAD
 
 ### Telescop Automation
 
@@ -87,3 +87,5 @@ Setting FITS value: { tp_lon : -84 }
 Setting FITS value: { tp_LST : 18.728816248 }
 saving FITS image to: C:\Users\Dave\Desktop\tpoint\503b4a385e14ff2c1079f9b4c24c8d5e_2.fits
 ```
+=======
+>>>>>>> e86c529c934fda06868dc02d136e3e65181bbb3a
