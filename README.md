@@ -33,35 +33,35 @@ All the survey parameters are defined in one json object.  Here is the example i
 Example input:
 ```javascript
 {
-    "location": {
-        "lat": 40,
-        "lon": -84
-    },
-    "camera": {
-        "Fov": 10,
-        "Exposure": 1
-    },
-    "survey": {
-        "area": 8,
-        "buffers": {
-                "meridian": 4,
-                        "pole": 20
-        },
-        "masks": {
-                "elevation": {
-                        "min": 5
-                }
-        }
-    },
-    "astrometry": {
-        "api": {
-                "api_url": "http://nova.astrometry.net/api/",
-                "key": "your_key_here"
-        }
-    },
-    "files": {
-        "FIT_Directory": "/Path/To/FIT/files"
-    }
+   "location":{
+      "lat":40,
+      "lon":-84
+   },
+   "camera":{
+      "fov":10,
+      "exposure":1
+   },
+   "survey":{
+      "area":8,
+      "buffers":{
+         "meridian":4,
+         "pole":20
+      },
+      "masks":{
+         "elevation":{
+            "min":5
+         }
+      }
+   },
+   "astrometry":{
+      "api":{
+         "api_url":"http://nova.astrometry.net/api/",
+         "key":"my_key"
+      }
+   },
+   "files":{
+      "fit_directory":"/path/to/fit/files"
+   }
 }
 ```
 

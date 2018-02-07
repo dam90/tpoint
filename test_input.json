@@ -4,8 +4,8 @@
     	"lon": -84
     },
     "camera": {
-    	"Fov": 10,
-    	"Exposure": 1
+    	"fov": 10,
+    	"exposure": 1
     },
     "survey": {
     	"area": 8,
@@ -26,7 +26,6 @@
     	}
     },
     "files": {
-		"X_FIT_Directory": "C:\\tpoint",
-    	"FIT_Directory": "/Users/Dave/Desktop/FIT"
+    	"fit_directory": "/Users/Dave/Desktop/FIT"
     }
 }
