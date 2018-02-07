@@ -253,7 +253,7 @@ def ScrubGridAzEl(P,Az,El):
 			if GreatCircleDelta(az,el,180,el) < P['survey']['buffers']['meridian']:
 				continue
 		# 3) minimum elevation
-		if el < P['survey']['masks']['elevation']['min']:
+		if el < P['survey']['masks']['include']['elevation'][0]:
 			continue
 		# else, finally it should be good pointing:
 		Az_Scrub.append(az)
@@ -318,7 +318,7 @@ def Plot2D(az,el,P,my_line_style='None'):
 	handle_meridian_east_buffer = plt.plot([360-P['survey']['buffers']['meridian'],360-P['survey']['buffers']['meridian']],[0,90],color='red',linestyle='--',marker='None')
 	handle_meridian_east_buffer = plt.plot([P['survey']['buffers']['meridian'],P['survey']['buffers']['meridian']],[0,90],color='red',linestyle='--',marker='None')
 	# plot minimum elevation:
-	handle_elevation_limit = plt.plot([0,360],[P['survey']['masks']['elevation']['min'],P['survey']['masks']['elevation']['min']],color='green',linestyle='--',marker='None',label='Minimum Elevation ('+str(P['survey']['masks']['elevation']['min'])+' deg)')
+	handle_elevation_limit = plt.plot([0,360],[P['survey']['masks']['include']['elevation'][0],P['survey']['masks']['include']['elevation'][0]],color='green',linestyle='--',marker='None',label='Minimum Elevation ('+str(P['survey']['masks']['include']['elevation'][0])+' deg)')
 	# plot pole boundary:
 	ax = plt.gca()
 	circle0 = matplotlib.patches.Circle((0,P['location']['lat']), P['survey']['buffers']['pole'], ec="b",fill=None,label='Pole Buffer ('+str(P['survey']['buffers']['pole'])+' deg)')

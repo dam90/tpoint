@@ -42,14 +42,14 @@ Example input:
       "exposure":1
    },
    "survey":{
-      "area":8,
+      "area":5,
       "buffers":{
          "meridian":4,
          "pole":20
       },
       "masks":{
-         "elevation":{
-            "min":5
+         "include":{
+            "elevation":[15,90]
          }
       }
    },
