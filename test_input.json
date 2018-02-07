@@ -22,11 +22,11 @@
     "astrometry": {
     	"api": {
     		"api_url": "http://nova.astrometry.net/api/",
-    		"key": "rdiqbrjtupdqhemb"
+    		"key": "my_key"
     	}
     },
     "files": {
 		"X_FIT_Directory": "C:\\tpoint",
     	"FIT_Directory": "/Users/Dave/Desktop/FIT"
     }
-} 
+}
