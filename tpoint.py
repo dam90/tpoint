@@ -72,8 +72,8 @@ def Survey(P):
 		# Slew
 		scope.SlewToAzAlt([az1,el1])
 		# Expose
-		print "Exposing for",P['Exposure']," seconds..."
-		camera.expose(P['Exposure'])
+		print "Exposing for",P['camera']['exposure']," seconds..."
+		camera.expose(P['camera']['exposure'])
 		# -------------------------------------------
 		#      Store Data in the FITS Header.
 		# -------------------------------------------
