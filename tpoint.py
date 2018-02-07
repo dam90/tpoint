@@ -4,7 +4,7 @@ try:
 except:
 	print "Could not import API libraries"
 # import utilities:
-from utility import sphere
+from utility import sphere, dispatch
 from utility.tsp import tsp
 # other dependencies:
 import numpy as np
@@ -31,9 +31,9 @@ def Survey(P):
 	print "-------------------------------------"
 	print " Verifying output directory...."
 	if os.path.isdir(P['Save_Directory']):
-		print "Storing FITS files in:",P['Save_Directory']
+		print "Storing FITS files in:",P['files']['fit_directory']
 	else:
-		print "Directory does not exist:",P['Save_Directory']
+		print "Directory does not exist:",P['files']['fit_directory']
 		print "Attempting to create directory..."
 		os.makedirs(P['Save_Directory'])
 		if os.path.isdir(P['Save_Directory']):
@@ -87,18 +87,28 @@ def Survey(P):
 		time_stamp = datetime.strftime(datetime.utcnow(),"%Y-%m-%dT%H:%M:%S.%f")
 		camera.setFitsKey("tp_utc",time_stamp)
 		# store lat/lon
-		camera.setFitsKey("tp_lat",P['Lat'])
-		camera.setFitsKey("tp_lon",P['Lon'])
+		camera.setFitsKey("tp_lat",P['location']['lat'])
+		camera.setFitsKey("tp_lon",P['location']['lon'])
 		# store sidereal time
-		camera.setFitsKey("tp_LST",compute_sidereal_time(P['Lon']))
+		camera.setFitsKey("tp_LST",compute_sidereal_time(P['location']['lon']))
 		# Save Exposure
 		filename = session_key + "_" + str(count) + ".fits"
 		# save_dir = "C:\\Users\\Dave\\Desktop\\tpoint"
-		save_dir = P['Save_Directory']
+		save_dir = P['files']['fit_directory']
+
+		# need to change this to be platform independent:
+
 		save_path = save_dir+"\\"+filename
 		camera.saveImage(save_path)
 	print "-------------------------------------"
 	print " Survey Complete!"
+
+def Solve(P):
+	'''
+	Watch directory of FITs files, solve them.
+	'''
+	w = dispatch.Watcher(P)
+	w.run()
 
 def ShortestPath(az,el):
 	'''
@@ -231,19 +241,19 @@ def ScrubGridAzEl(P,Az,El):
 	El_Scrub = []
 	for az,el in zip(Az,El):
 		# Convert to ra/dec in order to add declination offset
-		ra,dec = AzEl2RaDec(datetime.now(),az,el,P['Lat'],P['Lon'])
+		ra,dec = AzEl2RaDec(datetime.now(),az,el,P['location']['lat'],P['location']['lon'])
 		# 1) Distance from celestial pole
-		if dec > (90-P['PoleBuffer']):
+		if dec > (90-P['survey']['buffers']['pole']):
 			continue
 		# 2) Closeness to local meridian
 		if az <= 90 or az >= 270:
-			if GreatCircleDelta(az,el,0,el) < P['MeridianBuffer']:
+			if GreatCircleDelta(az,el,0,el) < P['survey']['buffers']['meridian']:
 				continue
 		else:
-			if GreatCircleDelta(az,el,180,el) < P['MeridianBuffer']:
+			if GreatCircleDelta(az,el,180,el) < P['survey']['buffers']['meridian']:
 				continue
 		# 3) minimum elevation
-		if el < P['MinEl']:
+		if el < P['survey']['masks']['elevation']['min']:
 			continue
 		# else, finally it should be good pointing:
 		Az_Scrub.append(az)
@@ -259,7 +269,7 @@ def RandomSearchGrid(P):
 	theta = 2*pi*U = Azimuth*pi/180
 	phi = acos(2*V-1)= (90 - Elevation)*pi/180
 	'''
-	num_samples = P['Number_Samples']
+	num_samples = 41253/P['survey']['area']
 	U = np.random.rand(num_samples/4)
 	V = np.random.rand(num_samples)
 	theta = 2*np.pi*U
@@ -275,7 +285,7 @@ def UniformSearchGrid(P):
 	This results in a regular distribution.
 	'''
 	# points:
-	V,Phi = sphere.area_regular_points(P['Area'])
+	V,Phi = sphere.area_regular_points(P['survey']['area'])
 	# create az/el:
 	az = Phi
 	el = []
@@ -290,7 +300,6 @@ def Test(P):
 	print '--------------------------------------------'
     # Show Input:
 	print json.dumps(P,indent=4)
-    # Execute Survey:
 	az,el = UniformSearchGrid(P)
 	az2,el2 = ShortestPath(az,el)
 	Plot2D(az2,el2,P)
@@ -304,23 +313,23 @@ def Plot2D(az,el,P,my_line_style='None'):
 	plt.subplot(1,1,1)
 	# plot meridian boundary:
 	handle_meridian = plt.plot([180,180],[0,90],color='red',linestyle='-',marker='None',label='Local Meridian')
-	handle_meridian_west_buffer = plt.plot([180+P['MeridianBuffer'],180+P['MeridianBuffer']],[0,90],color='red',linestyle='--',marker='None',label='Meridian Buffer ('+str(P['MeridianBuffer'])+' deg)')
-	handle_meridian_east_buffer = plt.plot([180-P['MeridianBuffer'],180-P['MeridianBuffer']],[0,90],color='red',linestyle='--',marker='None')
-	handle_meridian_east_buffer = plt.plot([360-P['MeridianBuffer'],360-P['MeridianBuffer']],[0,90],color='red',linestyle='--',marker='None')
-	handle_meridian_east_buffer = plt.plot([P['MeridianBuffer'],P['MeridianBuffer']],[0,90],color='red',linestyle='--',marker='None')
+	handle_meridian_west_buffer = plt.plot([180+P['survey']['buffers']['meridian'],180+P['survey']['buffers']['meridian']],[0,90],color='red',linestyle='--',marker='None',label='Meridian Buffer ('+str(P['survey']['buffers']['meridian'])+' deg)')
+	handle_meridian_east_buffer = plt.plot([180-P['survey']['buffers']['meridian'],180-P['survey']['buffers']['meridian']],[0,90],color='red',linestyle='--',marker='None')
+	handle_meridian_east_buffer = plt.plot([360-P['survey']['buffers']['meridian'],360-P['survey']['buffers']['meridian']],[0,90],color='red',linestyle='--',marker='None')
+	handle_meridian_east_buffer = plt.plot([P['survey']['buffers']['meridian'],P['survey']['buffers']['meridian']],[0,90],color='red',linestyle='--',marker='None')
 	# plot minimum elevation:
-	handle_elevation_limit = plt.plot([0,360],[P['MinEl'],P['MinEl']],color='green',linestyle='--',marker='None',label='Minimum Elevation ('+str(P['MinEl'])+' deg)')
+	handle_elevation_limit = plt.plot([0,360],[P['survey']['masks']['elevation']['min'],P['survey']['masks']['elevation']['min']],color='green',linestyle='--',marker='None',label='Minimum Elevation ('+str(P['survey']['masks']['elevation']['min'])+' deg)')
 	# plot pole boundary:
 	ax = plt.gca()
-	circle0 = matplotlib.patches.Circle((0,P['Lat']), P['PoleBuffer'], ec="b",fill=None,label='Pole Buffer ('+str(P['PoleBuffer'])+' deg)')
-	circle360 = matplotlib.patches.Circle((360,P['Lat']), P['PoleBuffer'], ec="b",fill=None)
+	circle0 = matplotlib.patches.Circle((0,P['location']['lat']), P['survey']['buffers']['pole'], ec="b",fill=None,label='Pole Buffer ('+str(P['survey']['buffers']['pole'])+' deg)')
+	circle360 = matplotlib.patches.Circle((360,P['location']['lat']), P['survey']['buffers']['pole'], ec="b",fill=None)
 	ax.add_patch(circle0)
 	ax.add_patch(circle360)
 	# plot the survey points:
 	plt.plot(az,el,linestyle=my_line_style,marker='+')
 	# Make it nice
 	plt.axis('scaled')
-	if P['Lat'] >= 0:
+	if P['location']['lat'] >= 0:
 		plt.axis([0,360,0,90])
 	else:
 		plt.axis([0,360,0,90])
@@ -350,4 +359,6 @@ def Plot3D(az,el,P,my_line_style='None'):
 if __name__ == "__main__":
 	# load survey config fromt he default file:
 	P = json.load(open('test_input.json'))
-	Survey(P)
+	Test(P)
+	# Survey(P)
+	# Solve(P)

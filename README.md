@@ -33,16 +33,36 @@ All the survey parameters are defined in one json object.  Here is the example i
 Example input:
 ```javascript
 {
-        "MinEl": 5,
-        "MeridianBuffer": 4,
-        "PoleBuffer": 20,
+    "location": {
+        "lat": 40,
+        "lon": -84
+    },
+    "camera": {
         "Fov": 10,
-        "Lat": 40,
-        "Lon": -84,
-        "Exposure": 1,
-        "Area": 8,
-        "Save_Directory": "C:\\tpoint"
-} 
+        "Exposure": 1
+    },
+    "survey": {
+        "area": 8,
+        "buffers": {
+                "meridian": 4,
+                        "pole": 20
+        },
+        "masks": {
+                "elevation": {
+                        "min": 5
+                }
+        }
+    },
+    "astrometry": {
+        "api": {
+                "api_url": "http://nova.astrometry.net/api/",
+                "key": "your_key_here"
+        }
+    },
+    "files": {
+        "FIT_Directory": "/Path/To/FIT/files"
+    }
+}
 ```
 
 All angle units are in degrees... that's the only note I can think of here.

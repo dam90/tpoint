@@ -1,11 +1,32 @@
 {
-        "MinEl": 5,
-        "MeridianBuffer": 4,
-        "PoleBuffer": 20,
-        "Fov": 10,
-        "Lat": 40,
-        "Lon": -84,
-        "Exposure": 1,
-        "Area": 8,
-        "Save_Directory": "C:\\tpoint"
+    "location": {
+    	"lat": 40,
+    	"lon": -84
+    },
+    "camera": {
+    	"Fov": 10,
+    	"Exposure": 1
+    },
+    "survey": {
+    	"area": 8,
+    	"buffers": {
+    		"meridian": 4,
+			"pole": 20
+    	},
+    	"masks": {
+    		"elevation": {
+    			"min": 5
+    		}
+    	}
+    },
+    "astrometry": {
+    	"api": {
+    		"api_url": "http://nova.astrometry.net/api/",
+    		"key": "rdiqbrjtupdqhemb"
+    	}
+    },
+    "files": {
+		"X_FIT_Directory": "C:\\tpoint",
+    	"FIT_Directory": "/Users/Dave/Desktop/FIT"
+    }
 } 
