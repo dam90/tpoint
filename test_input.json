@@ -8,7 +8,7 @@
       "exposure":1
    },
    "survey":{
-      "area":5,
+      "area":6,
       "buffers":{
          "meridian":4,
          "pole":20

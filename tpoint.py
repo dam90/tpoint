@@ -205,14 +205,25 @@ def Test(P):
 	print '--------------------------------------------'
 	print '    Demo of scripted T-Point Calibration'
 	print '--------------------------------------------'
+    # set to true to save plots:
+	save_plots = True
     # Show Input:
 	print json.dumps(P,indent=4)
 	az,el = UniformSearchGrid(P)
-	# az,el = ShortestPath(az,el)
-	plot.Plot2D(az,el,P)
-	plot.Plot3D(az,el,P)
-	Plot2D(az,el,P,'-')
-	Plot3D(az,el,P,'-')
+	az,el = ShortestPath(az,el)
+	if save_plots:
+		# Survey plots:
+		plot.Plot2D(az,el,P,'none','docs/images/survey_2D.png')
+		plot.Plot3D(az,el,P,'none','docs/images/survey_3D.png')
+		# TSP plots:
+		plot.Plot2D(az,el,P,'-','docs/images/tsp_2D.png')
+		plot.Plot3D(az,el,P,'-','docs/images/tsp_3D.png')
+
+	else:
+		plot.Plot2D(az,el,P)
+		plot.Plot3D(az,el,P)
+		plot.Plot2D(az,el,P,'-')
+		plot.Plot3D(az,el,P,'-')
 
 if __name__ == "__main__":
 	# load survey config fromt he default file:

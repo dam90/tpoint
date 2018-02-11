@@ -2,6 +2,51 @@
 from datetime import datetime
 import ephem
 import numpy as np
+import math
+
+def vrotate(vector,axis,theta_rad):
+    '''
+    rotate vector (list) about axis (list) by theta (radians)
+    '''
+    # make arrays:
+    vector = np.asarray(vector)
+    axis = np.asarray(axis)
+    # rotation matrix
+    axis = axis/math.sqrt(np.dot(axis, axis))
+    a = math.cos(theta_rad/2.0)
+    b, c, d = -axis*math.sin(theta_rad/2.0)
+    aa, bb, cc, dd = a*a, b*b, c*c, d*d
+    bc, ad, ac, ab, bd, cd = b*c, a*d, a*c, a*b, b*d, c*d
+    M = np.array([[aa+bb-cc-dd, 2*(bc+ad), 2*(bd-ac)],
+                     [2*(bc-ad), aa+cc-bb-dd, 2*(cd+ab)],
+                     [2*(bd+ac), 2*(cd-ab), aa+dd-bb-cc]])
+    # rotate the vector
+    rotated = np.dot(M,vector)
+    return rotated
+
+def azel2xyz(az,el):
+    x = np.cos(np.deg2rad(el))*np.cos(np.deg2rad(az))
+    y = np.cos(np.deg2rad(el))*np.sin(np.deg2rad(az))
+    z = np.sin(np.deg2rad(el))
+    return x,y,z
+
+def xyz2azel(v):
+    # normallize
+    v  = np.asarray(v)
+    v = v / np.linalg.norm(v)
+    az = np.rad2deg(np.arctan2(v[1],v[0]))
+    el = 90 - np.rad2deg(np.arccos(v[2]))
+    return az,el
+
+def meridian_rotate(az,el,theta_deg):
+    '''
+    rotate point perpendicular to its meridian, returns az/el
+    '''
+    v = list(azel2xyz(az,el))
+    axis = list(azel2xyz(az,el+90))
+    rotated = vrotate(v,axis,np.deg2rad(theta_deg))
+    az,el = xyz2azel(rotated)
+    return az,el
 
 def compute_sidereal_time(lon,lat=0,alt=0,t=datetime.utcnow()):
     '''
