@@ -125,7 +125,7 @@ def AzEl2RaDec(DateTime,Az,El,Lat,Lon,Alt=0,display=False):
 
 def GreatCircleDelta(az1,el1,az2,el2):
 	'''
-	Return sthe central angle between to az/el coordinates (great circle distance)
+	Return sthe central angle between two az/el coordinates (great circle distance)
 	Input/Output in degrees
 	'''
 	lam1 = np.deg2rad(az1)

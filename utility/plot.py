@@ -189,7 +189,7 @@ def Plot3D(az,el,P,my_line_style='None',save_path=None):
 	lat = P['location']['lat']
 	lon = P['location']['lon']
 
-	fig = plt.figure(figsize=(7,7))
+	fig = plt.figure(figsize=(16,16))
 	ax = fig.add_subplot(111, projection='3d')
 	plt.tight_layout()
 
