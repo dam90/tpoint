@@ -2,7 +2,6 @@ import math
 import random
 import numpy as np
 
-
 def distL2((x1,y1), (x2,y2)):
     """Compute the L2-norm (Euclidean) distance between two points.
 

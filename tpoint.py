@@ -4,7 +4,7 @@ try:
 except:
 	print "Could not import API libraries"
 # import utilities:
-from utility import sphere, dispatch
+from utility import sphere, dispatch, plot, geometry
 from utility.tsp import tsp
 # other dependencies:
 import numpy as np
@@ -140,99 +140,6 @@ def ShortestPath(az,el):
 
 	return a,e
 
-
-def compute_sidereal_time(lon,lat=0,alt=0,t=datetime.utcnow()):
-    '''
-        Return local apparent sidereal time in decimal hours:
-        
-        Inputs [required]
-        lon - (float) longitude in decimal degrees
-        
-        Inputs [optional]
-        lat - (float, default=0) latitude in decimal degrees
-        alt - (float, default=0) altitude in meteres
-        time - (float, default=now) datetime object
-        
-        Output
-        sidereal_time - (float) local apparent sidereal time in decimal hours
-    '''
-    ovr = ephem.Observer()
-    ovr.lon = lon * ephem.degree
-    ovr.lat = lat * ephem.degree
-    ovr.elevation = alt
-    ovr.date = t
-    st = ovr.sidereal_time()
-    st_hours = (st/ephem.degree)/15 # convert time in radians to decimal hours
-    return st_hours
-
-def RaDec2AzEl(DateTime,Ra,Dec,Lat,Lon,Alt=0,display=False):
-    '''
-    Given ra/dec pointing and an observation lat(deg),lon(deg),alt(m) at a UTC time
-    convert to az/el angles.  All inputs and outputs in degrees.
-    '''
-    # We need to create a "Body" in pyephem, which represents the coordinate
-    # http://stackoverflow.com/questions/11169523/how-to-compute-alt-az-for-given-galactic-coordinate-glon-glat-with-pyephem
-    body = ephem.FixedBody()
-    body._ra = np.radians(Ra)
-    body._dec = np.radians(Dec)
-    # Set observer parameters
-    obs = ephem.Observer()
-    obs.lon = np.radians(Lon)
-    obs.lat = np.radians(Lat)
-    obs.elevation = Alt
-    obs.date = DateTime
-    # Turn refraction off by setting pressure to zero
-    obs.pressure = 0
-    # Compute alt / az of the body for that observer
-    body.compute(obs)
-    az, alt = np.degrees([body.az, body.alt])
-    return az, alt
-
-def AzEl2RaDec(DateTime,Az,El,Lat,Lon,Alt=0,display=False):
-    '''
-    Given az/el pointing and an observation lat(deg),lon(deg),alt(m) at a UTC time
-    convert to rad/dec angles.  All inputs and outputs in degrees.
-    '''
-    import numpy as np
-    import ephem
-    # convert to radians
-    az = np.radians(Az)
-    el = np.radians(El)
-    lon = np.radians(Lon)
-    lat = np.radians(Lat)
-    alt = Alt
-    # Define an observer:
-    observer = ephem.Observer()
-    observer.lon = lon
-    observer.lat = lat
-    observer.elevation = alt
-    observer.date = DateTime
-    # Compute ra,dec 
-    ra,dec = observer.radec_of(az, el)
-    if display:
-        print "Time: " + datetime.strftime(DateTime,'%d-%m-%Y %H:%M:%S.%f')
-        print "RA: " + str(np.degrees(ra))
-        print "DEC: " + str(np.degrees(dec))
-    # return output
-    return np.degrees(ra),np.degrees(dec)
-
-def GreatCircleDelta(az1,el1,az2,el2):
-	'''
-	Return sthe central angle between to az/el coordinates (great circle distance)
-	Input/Output in degrees
-	'''
-	lam1 = np.deg2rad(az1)
-	phi1 = np.deg2rad(el1)
-	lam2 = np.deg2rad(az2)
-	phi2 = np.deg2rad(el2)
-	dlam = lam2-lam1
-	if abs(dlam) < 0.00001:
-		delta = 0
-	else:
-		sigma = np.arccos( (np.sin(phi1)*np.sin(phi2)) + (np.cos(phi1)*np.cos(phi2)*np.cos(dlam)) )
-		delta = abs(np.rad2deg(sigma))
-	return delta
-
 def ScrubGridAzEl(P,Az,El):
 	'''
 	This filters az/el pairs based on paramaters in the dictionary P
@@ -241,16 +148,16 @@ def ScrubGridAzEl(P,Az,El):
 	El_Scrub = []
 	for az,el in zip(Az,El):
 		# Convert to ra/dec in order to add declination offset
-		ra,dec = AzEl2RaDec(datetime.now(),az,el,P['location']['lat'],P['location']['lon'])
+		ra,dec = geometry.AzEl2RaDec(datetime.now(),az,el,P['location']['lat'],P['location']['lon'])
 		# 1) Distance from celestial pole
 		if dec > (90-P['survey']['buffers']['pole']):
 			continue
 		# 2) Closeness to local meridian
 		if az <= 90 or az >= 270:
-			if GreatCircleDelta(az,el,0,el) < P['survey']['buffers']['meridian']:
+			if geometry.GreatCircleDelta(az,el,0,el) < P['survey']['buffers']['meridian']:
 				continue
 		else:
-			if GreatCircleDelta(az,el,180,el) < P['survey']['buffers']['meridian']:
+			if geometry.GreatCircleDelta(az,el,180,el) < P['survey']['buffers']['meridian']:
 				continue
 		# 3) minimum elevation
 		if el < P['survey']['masks']['include']['elevation'][0]:
@@ -301,60 +208,11 @@ def Test(P):
     # Show Input:
 	print json.dumps(P,indent=4)
 	az,el = UniformSearchGrid(P)
-	az2,el2 = ShortestPath(az,el)
-	Plot2D(az2,el2,P)
-	Plot3D(az2,el2,P)
-	Plot2D(az2,el2,P,'-')
-	Plot3D(az2,el2,P,'-')
-
-def Plot2D(az,el,P,my_line_style='None'):
-	import matplotlib
-	import matplotlib.pyplot as plt
-	plt.subplot(1,1,1)
-	# plot meridian boundary:
-	handle_meridian = plt.plot([180,180],[0,90],color='red',linestyle='-',marker='None',label='Local Meridian')
-	handle_meridian_west_buffer = plt.plot([180+P['survey']['buffers']['meridian'],180+P['survey']['buffers']['meridian']],[0,90],color='red',linestyle='--',marker='None',label='Meridian Buffer ('+str(P['survey']['buffers']['meridian'])+' deg)')
-	handle_meridian_east_buffer = plt.plot([180-P['survey']['buffers']['meridian'],180-P['survey']['buffers']['meridian']],[0,90],color='red',linestyle='--',marker='None')
-	handle_meridian_east_buffer = plt.plot([360-P['survey']['buffers']['meridian'],360-P['survey']['buffers']['meridian']],[0,90],color='red',linestyle='--',marker='None')
-	handle_meridian_east_buffer = plt.plot([P['survey']['buffers']['meridian'],P['survey']['buffers']['meridian']],[0,90],color='red',linestyle='--',marker='None')
-	# plot minimum elevation:
-	handle_elevation_limit = plt.plot([0,360],[P['survey']['masks']['include']['elevation'][0],P['survey']['masks']['include']['elevation'][0]],color='green',linestyle='--',marker='None',label='Minimum Elevation ('+str(P['survey']['masks']['include']['elevation'][0])+' deg)')
-	# plot pole boundary:
-	ax = plt.gca()
-	circle0 = matplotlib.patches.Circle((0,P['location']['lat']), P['survey']['buffers']['pole'], ec="b",fill=None,label='Pole Buffer ('+str(P['survey']['buffers']['pole'])+' deg)')
-	circle360 = matplotlib.patches.Circle((360,P['location']['lat']), P['survey']['buffers']['pole'], ec="b",fill=None)
-	ax.add_patch(circle0)
-	ax.add_patch(circle360)
-	# plot the survey points:
-	plt.plot(az,el,linestyle=my_line_style,marker='+')
-	# Make it nice
-	plt.axis('scaled')
-	if P['location']['lat'] >= 0:
-		plt.axis([0,360,0,90])
-	else:
-		plt.axis([0,360,0,90])
-	plt.ylabel('Elevation (deg)')
-	plt.xlabel('Azimuth (deg)')
-	plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,ncol=2, mode="expand", borderaxespad=0.)
-
-def Plot3D(az,el,P,my_line_style='None'):
-	import matplotlib
-	import matplotlib.pyplot as plt
-	from mpl_toolkits.mplot3d import Axes3D
-	fig = plt.figure()
-	ax = fig.add_subplot(111, projection='3d')
-	x = np.cos(np.deg2rad(el))*np.cos(np.deg2rad(az))
-	y = np.cos(np.deg2rad(el))*np.sin(np.deg2rad(az))
-	z = np.sin(np.deg2rad(el))
-	ax.plot(x, y, z,linestyle=my_line_style,marker='+')
-	ax.axis('equal')
-	ax.set_xlim(-1,1)
-	ax.set_ylim(-1,1)
-	ax.set_zlim(0,1)
-	ax.set_xlabel('X')
-	ax.set_ylabel('Y')
-	ax.set_zlabel('Z')
-	plt.show()
+	# az,el = ShortestPath(az,el)
+	plot.Plot2D(az,el,P)
+	plot.Plot3D(az,el,P)
+	Plot2D(az,el,P,'-')
+	Plot3D(az,el,P,'-')
 
 if __name__ == "__main__":
 	# load survey config fromt he default file:
